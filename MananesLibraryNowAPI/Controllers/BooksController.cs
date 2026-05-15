@@ -1,0 +1,71 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using MananesLibraryNowAPI.Models;
+
+namespace DelfinLibraryNowAPI.Controllers
+{
+    [Route("api/v1/books")]
+    [ApiController]
+    public class BooksCotroller : ControllerBase
+    {
+        private static List<Book> books = new List<Book>
+        {
+
+           new Book { Id = 1, Title = "To Kill a Mockingbird", Author = "Harper Lee", Genre = "Southern Gothic / Fiction", Available = true, PublishedYear = 1960 },
+           new Book { Id = 2, Title = "Harry Potter and the Philosopher's Stone", Author = "J. K. Rowling", Genre = "Fantasy", Available = true, PublishedYear = 1997 }
+
+    };
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            return Ok(new { status = "success", data = books, message = "Books retrieved." });
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            var book = books.FirstOrDefault(book => book.Id == id);
+            if (book == null)
+                return NotFound(new { status = "error", data = (object?)null, message = "Books not found" });
+            return Ok(new { status = "success", data = book, message = "Book retrieved." });
+        }
+
+        [HttpPost]
+        public IActionResult Create([FromBody] Book newBook)
+        {
+            newBook.Id = books.Count + 1;
+            books.Add(newBook);
+            return CreatedAtAction(nameof(GetById), new { id = newBook.Id },
+            new { status = "success", data = newBook, message = "Book created." });
+
+        }
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] Book updateBook)
+        {
+            var book = books.FirstOrDefault(b => b.Id == id);
+            if (book == null)
+                return NotFound(new { status = "error", data = (object?)null, message = "Book not found." });
+
+            book.Title = updateBook.Title;
+            book.Author = updateBook.Author;
+            book.Genre = updateBook.Genre;
+            book.Available = updateBook.Available;
+            book.PublishedYear = updateBook.PublishedYear;
+
+            return Ok(new { status = "success", data = book, message = "Book updated." });
+
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var book = books.FirstOrDefault(book => book.Id == id);
+            if (book == null)
+                return NotFound(new { status = "error", data = (object?)null, message = "Books not found." });
+
+            books.Remove(book);
+            return Ok(new { status = "success", data = book, message = "Books Deleted" });
+        }
+    }
+}
